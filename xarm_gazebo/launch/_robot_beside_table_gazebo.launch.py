@@ -35,6 +35,11 @@ def launch_setup(context, *args, **kwargs):
     dof = LaunchConfiguration('dof', default=7)
     robot_type = LaunchConfiguration('robot_type', default='xarm')
     ros2_control_plugin = LaunchConfiguration('ros2_control_plugin', default='')
+    world = LaunchConfiguration('world', default='')
+    spawn_x = LaunchConfiguration('spawn_x', default='')
+    spawn_y = LaunchConfiguration('spawn_y', default='')
+    spawn_z = LaunchConfiguration('spawn_z', default='')
+    spawn_yaw = LaunchConfiguration('spawn_yaw', default='')
     
     add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
     add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
@@ -67,6 +72,12 @@ def launch_setup(context, *args, **kwargs):
 
     gz_type = LaunchConfiguration('gz_type', default='gazebo').perform(context)
     gz_type = 'ignition' if gz_type == 'ign' else gz_type
+    world_path = world.perform(context)
+
+    spawn_x_value = spawn_x.perform(context) or '-0.2'
+    spawn_y_value = spawn_y.perform(context) or ('-0.54' if robot_type.perform(context) == 'uf850' else '-0.5')
+    spawn_z_value = spawn_z.perform(context) or '1.021'
+    spawn_yaw_value = spawn_yaw.perform(context) or '1.571'
     if ros2_control_plugin.perform(context) == '':
         ros2_control_plugin = 'gz_ros2_control/GazeboSimSystem' if gz_type == 'gz' else 'ign_ros2_control/IgnitionSystem' if gz_type == 'ignition' else 'gazebo_ros2_control/GazeboSystem'
 
@@ -143,12 +154,15 @@ def launch_setup(context, *args, **kwargs):
     )
 
     if gz_type == 'gz':
-        gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table_gz.world'])
+        if world_path:
+            gazebo_world = world_path
+        else:
+            gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table_gz.world']).perform(context)
         # ros_gz_sim/launch/gz_sim.launch.py
         gazebo_launch = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('ros_gz_sim'), 'launch', 'gz_sim.launch.py'])),
             launch_arguments={
-                'gz_args': ' -r -v 3 {} --physics-engine gz-physics-bullet-featherstone-plugin'.format(gazebo_world.perform(context)),
+                'gz_args': ' -r -v 3 {} --physics-engine gz-physics-bullet-featherstone-plugin'.format(gazebo_world),
             }.items(),
         )
         # gazebo spawn entity node
@@ -160,10 +174,10 @@ def launch_setup(context, *args, **kwargs):
                 '-topic', 'robot_description',
                 # '-name', '{}'.format(xarm_type),
                 '-name', 'UF_ROBOT',
-                '-x', '-0.2',
-                '-y', '-0.54' if robot_type.perform(context) == 'uf850' else '-0.5',
-                '-z', '1.021',
-                '-Y', '1.571',
+                '-x', spawn_x_value,
+                '-y', spawn_y_value,
+                '-z', spawn_z_value,
+                '-Y', spawn_yaw_value,
                 # '-allow_renaming', 'true'
             ],
             parameters=[{'use_sim_time': True}],
@@ -198,12 +212,15 @@ def launch_setup(context, *args, **kwargs):
             output='screen'
         )
     elif gz_type == 'ignition':
-        gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table_gz.world'])
+        if world_path:
+            gazebo_world = world_path
+        else:
+            gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table_gz.world']).perform(context)
         # ros_ign_gazebo/launch/ign_gazebo.launch.py
         gazebo_launch = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('ros_ign_gazebo'), 'launch', 'ign_gazebo.launch.py'])),
             launch_arguments={
-                'ign_args': ' -r -v 3 {}'.format(gazebo_world.perform(context)),
+                'ign_args': ' -r -v 3 {}'.format(gazebo_world),
             }.items(),
         )
         # gazebo spawn entity node
@@ -215,10 +232,10 @@ def launch_setup(context, *args, **kwargs):
                 '-topic', 'robot_description',
                 # '-name', '{}'.format(xarm_type),
                 '-name', 'UF_ROBOT',
-                '-x', '-0.2',
-                '-y', '-0.54' if robot_type.perform(context) == 'uf850' else '-0.5',
-                '-z', '1.021',
-                '-Y', '1.571',
+                '-x', spawn_x_value,
+                '-y', spawn_y_value,
+                '-z', spawn_z_value,
+                '-Y', spawn_yaw_value,
                 # '-allow_renaming', 'true'
             ],
             parameters=[{'use_sim_time': True}],
@@ -252,7 +269,10 @@ def launch_setup(context, *args, **kwargs):
             output='screen'
         )
     else:
-        gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table.world'])
+        if world_path:
+            gazebo_world = world_path
+        else:
+            gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table.world'])
         # gazebo_ros/launch/gazebo.launch.py
         gazebo_launch = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('gazebo_ros'), 'launch', 'gazebo.launch.py'])),
@@ -271,10 +291,10 @@ def launch_setup(context, *args, **kwargs):
                 '-topic', 'robot_description',
                 # '-entity', '{}'.format(xarm_type),
                 '-entity', 'UF_ROBOT',
-                '-x', '-0.2',
-                '-y', '-0.54' if robot_type.perform(context) == 'uf850' else '-0.5',
-                '-z', '1.021',
-                '-Y', '1.571',
+                '-x', spawn_x_value,
+                '-y', spawn_y_value,
+                '-z', spawn_z_value,
+                '-Y', spawn_yaw_value,
             ],
             parameters=[{'use_sim_time': True}],
         )
@@ -372,5 +392,10 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('world', default_value='', description='World file override'),
+        DeclareLaunchArgument('spawn_x', default_value='', description='Robot spawn X'),
+        DeclareLaunchArgument('spawn_y', default_value='', description='Robot spawn Y'),
+        DeclareLaunchArgument('spawn_z', default_value='', description='Robot spawn Z'),
+        DeclareLaunchArgument('spawn_yaw', default_value='', description='Robot spawn yaw (rad)'),
         OpaqueFunction(function=launch_setup)
     ])
