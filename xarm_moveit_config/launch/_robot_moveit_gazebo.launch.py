@@ -38,6 +38,7 @@ def launch_setup(context, *args, **kwargs):
     spawn_y = LaunchConfiguration('spawn_y', default='')
     spawn_z = LaunchConfiguration('spawn_z', default='')
     spawn_yaw = LaunchConfiguration('spawn_yaw', default='')
+    gripper_version = LaunchConfiguration('gripper_version', default='G1')
     
     add_gripper = LaunchConfiguration('add_gripper', default=False)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
@@ -96,6 +97,7 @@ def launch_setup(context, *args, **kwargs):
         kinematics_suffix=kinematics_suffix,
         ros2_control_plugin=ros2_control_plugin,
         ros2_control_params=ros2_control_params,
+        gripper_version=gripper_version,
         add_gripper=add_gripper,
         add_vacuum_gripper=add_vacuum_gripper,
         add_bio_gripper=add_bio_gripper,
