@@ -71,7 +71,7 @@ def launch_setup(context, *args, **kwargs):
     ros_namespace = LaunchConfiguration('ros_namespace', default='').perform(context)
     moveit_config_dump = LaunchConfiguration('moveit_config_dump', default='')
 
-    gz_type = LaunchConfiguration('gz_type', default='gazebo').perform(context)
+    gz_type = LaunchConfiguration('gz_type', default='gz').perform(context)
     gz_type = 'ignition' if gz_type == 'ign' else gz_type
     world_path = world.perform(context)
 
