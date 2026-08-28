@@ -10,16 +10,19 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>control_toolbox</depend>
   <depend>controller_manager</depend>
-  <depend>gazebo_ros</depend>
   <depend>xarm_description</depend>
   <depend>xarm_controller</depend>
 
+  <!-- control_toolbox and gazebo_ros build/run the classic-Gazebo-only
+       gazebo_mimic_joint_plugin (see CMakeLists.txt); not required for gz-sim/Harmonic
+       launches (gz_type=gz), so left undeclared here to keep this package - and
+       xarm_moveit_config, which depends on it - installable on a Harmonic-only system.
+       Install them manually (e.g. ros-humble-gazebo-ros-pkgs) if you need the classic
+       Gazebo launch path (gz_type=gazebo). Same reasoning for gazebo_plugins and
+       gazebo_ros2_control below, which that path also needs. -->
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>gazebo_plugins</exec_depend>
-  <exec_depend>gazebo_ros2_control</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>uf_ros_lib</exec_depend>
 

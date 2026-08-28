@@ -18,13 +18,15 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(control_toolbox REQUIRED)
 find_package(controller_manager REQUIRED)
-find_package(gazebo_ros REQUIRED)
-
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+# control_toolbox/gazebo_ros are only needed to build gazebo_mimic_joint_plugin, a Gazebo
+# Classic-only ModelPlugin. The gz-sim (Harmonic+) launch path (gz_type=gz) never loads it -
+# the gripper's mimic joints get a native <mimic> constraint from xarm_description's xacros
+# instead, enforced directly by gz-physics. Look these up as optional so this package (and
+# xarm_moveit_config, which depends on it) stays buildable on a Harmonic-only system with no
+# classic Gazebo installed.
+find_package(control_toolbox QUIET)
+find_package(gazebo_ros QUIET)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -37,35 +39,39 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-include_directories(
-  include
-  ${ament_INCLUDE_DIRS}
-  ${GAZEBO_INCLUDE_DIRS}
-)
+if(control_toolbox_FOUND AND gazebo_ros_FOUND)
+  include_directories(
+    include
+    ${ament_INCLUDE_DIRS}
+    ${GAZEBO_INCLUDE_DIRS}
+  )
 
-link_directories(${GAZEBO_LIBRARY_DIRS})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+  link_directories(${GAZEBO_LIBRARY_DIRS})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
-add_library(gazebo_mimic_joint_plugin SHARED src/mimic_joint_plugin.cpp)
-ament_target_dependencies(gazebo_mimic_joint_plugin
-  control_toolbox
-  controller_manager
-  gazebo_ros
-)
-target_link_libraries(gazebo_mimic_joint_plugin ${ament_LIBRARIES} ${GAZEBO_LIBRARIES})
+  add_library(gazebo_mimic_joint_plugin SHARED src/mimic_joint_plugin.cpp)
+  ament_target_dependencies(gazebo_mimic_joint_plugin
+    control_toolbox
+    controller_manager
+    gazebo_ros
+  )
+  target_link_libraries(gazebo_mimic_joint_plugin ${ament_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+  install(TARGETS
+    gazebo_mimic_joint_plugin
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+  )
+else()
+  message(STATUS "xarm_gazebo: gazebo_ros/control_toolbox not found - skipping the "
+                  "Gazebo Classic-only gazebo_mimic_joint_plugin (not used by gz-sim launches)")
+endif()
 
 install(
   DIRECTORY include/
   DESTINATION include
 )
-
-install(TARGETS
-gazebo_mimic_joint_plugin
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
 
 install(DIRECTORY
   worlds
