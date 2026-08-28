@@ -19,14 +19,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(controller_manager REQUIRED)
-# control_toolbox/gazebo_ros are only needed to build gazebo_mimic_joint_plugin, a Gazebo
-# Classic-only ModelPlugin. The gz-sim (Harmonic+) launch path (gz_type=gz) never loads it -
-# the gripper's mimic joints get a native <mimic> constraint from xarm_description's xacros
-# instead, enforced directly by gz-physics. Look these up as optional so this package (and
-# xarm_moveit_config, which depends on it) stays buildable on a Harmonic-only system with no
-# classic Gazebo installed.
+# control_toolbox/gazebo/gazebo_ros only build the classic-Gazebo-only gazebo_mimic_joint_plugin.
+# The gz-sim (Harmonic+) launch path (gz_type=gz) never loads it - the gripper's mimic joints
+# get a native <mimic> constraint from xarm_description's xacros instead, enforced directly by
+# gz-physics. Look these up as optional so this package (and xarm_moveit_config, which depends
+# on it) stays buildable on a Harmonic-only system with no classic Gazebo installed.
 find_package(control_toolbox QUIET)
 find_package(gazebo_ros QUIET)
+find_package(gazebo QUIET)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -39,7 +39,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-if(control_toolbox_FOUND AND gazebo_ros_FOUND)
+if(control_toolbox_FOUND AND gazebo_ros_FOUND AND gazebo_FOUND)
   include_directories(
     include
     ${ament_INCLUDE_DIRS}
@@ -64,7 +64,7 @@ if(control_toolbox_FOUND AND gazebo_ros_FOUND)
     RUNTIME DESTINATION bin
   )
 else()
-  message(STATUS "xarm_gazebo: gazebo_ros/control_toolbox not found - skipping the "
+  message(STATUS "xarm_gazebo: control_toolbox/gazebo/gazebo_ros not found - skipping the "
                   "Gazebo Classic-only gazebo_mimic_joint_plugin (not used by gz-sim launches)")
 endif()
 

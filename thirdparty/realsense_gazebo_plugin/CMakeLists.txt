@@ -16,55 +16,63 @@ set(FastRTPS_LIBRARY_RELEASE /opt/ros/foxy/lib/libfastrtps.so)
 # Load catkin and all dependencies required for this package
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(gazebo_ros REQUIRED)
+find_package(gazebo_ros QUIET)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-find_package(gazebo REQUIRED)
+find_package(gazebo QUIET)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
-set( dependencies
-    rclcpp
-    gazebo_ros
-    image_transport
-    camera_info_manager
-    sensor_msgs
-)
+if(gazebo_ros_FOUND AND gazebo_FOUND)
+  set( dependencies
+      rclcpp
+      gazebo_ros
+      image_transport
+      camera_info_manager
+      sensor_msgs
+  )
 
-include_directories(
-    SYSTEM
-    include
-    ${GAZEBO_INCLUDE_DIRS}
-)
+  include_directories(
+      SYSTEM
+      include
+      ${GAZEBO_INCLUDE_DIRS}
+  )
 
-link_directories(${GAZEBO_LIBRARY_DIRS})
+  link_directories(${GAZEBO_LIBRARY_DIRS})
 
-add_library(
-    ${PROJECT_NAME} SHARED
-    src/RealSensePlugin.cpp
-    src/gazebo_ros_realsense.cpp
-    )
+  add_library(
+      ${PROJECT_NAME} SHARED
+      src/RealSensePlugin.cpp
+      src/gazebo_ros_realsense.cpp
+      )
 
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_link_libraries(${PROJECT_NAME} ${GAZEBO_LIBRARIES})
+  ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+  target_link_libraries(${PROJECT_NAME} ${GAZEBO_LIBRARIES})
 
-install(TARGETS ${PROJECT_NAME} 
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
+  install(TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+  )
 
-install(DIRECTORY include/
-  DESTINATION include/
-)
+  install(DIRECTORY include/
+    DESTINATION include/
+  )
+
+  ament_export_include_directories(include)
+  ament_export_libraries(${PROJECT_NAME})
+else()
+  message(WARNING
+    "gazebo_ros / Gazebo Classic not found. "
+    "Building stub realsense_gazebo_plugin (plugin disabled)."
+  )
+endif()
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
 ament_package()

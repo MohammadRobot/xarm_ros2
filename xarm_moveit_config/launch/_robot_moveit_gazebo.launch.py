@@ -33,6 +33,11 @@ def launch_setup(context, *args, **kwargs):
     attach_rpy = LaunchConfiguration('attach_rpy', default='"0 0 0"')
     mesh_suffix = LaunchConfiguration('mesh_suffix', default='stl')
     kinematics_suffix = LaunchConfiguration('kinematics_suffix', default='')
+    world = LaunchConfiguration('world', default='')
+    spawn_x = LaunchConfiguration('spawn_x', default='')
+    spawn_y = LaunchConfiguration('spawn_y', default='')
+    spawn_z = LaunchConfiguration('spawn_z', default='')
+    spawn_yaw = LaunchConfiguration('spawn_yaw', default='')
     gripper_version = LaunchConfiguration('gripper_version', default='G1')
     
     add_gripper = LaunchConfiguration('add_gripper', default=False)
@@ -56,7 +61,7 @@ def launch_setup(context, *args, **kwargs):
     no_gui_ctrl = LaunchConfiguration('no_gui_ctrl', default=False)
     ros_namespace = LaunchConfiguration('ros_namespace', default='').perform(context)
 
-    gz_type = LaunchConfiguration('gz_type', default='gazebo').perform(context)
+    gz_type = LaunchConfiguration('gz_type', default='gz').perform(context)
     gz_type = 'ignition' if gz_type == 'ign' else gz_type
 
     ros2_control_plugin = 'gz_ros2_control/GazeboSimSystem' if gz_type == 'gz' else 'ign_ros2_control/IgnitionSystem' if gz_type == 'ignition' else 'gazebo_ros2_control/GazeboSystem'
@@ -143,6 +148,11 @@ def launch_setup(context, *args, **kwargs):
             'show_rviz': 'true',
             'no_gui_ctrl': no_gui_ctrl,
             'gz_type': gz_type,
+            'world': world,
+            'spawn_x': spawn_x,
+            'spawn_y': spawn_y,
+            'spawn_z': spawn_z,
+            'spawn_yaw': spawn_yaw,
         }.items(),
     )
 
@@ -154,5 +164,10 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('world', default_value='', description='World file override'),
+        DeclareLaunchArgument('spawn_x', default_value='', description='Robot spawn X'),
+        DeclareLaunchArgument('spawn_y', default_value='', description='Robot spawn Y'),
+        DeclareLaunchArgument('spawn_z', default_value='', description='Robot spawn Z'),
+        DeclareLaunchArgument('spawn_yaw', default_value='', description='Robot spawn yaw (rad)'),
         OpaqueFunction(function=launch_setup)
     ])

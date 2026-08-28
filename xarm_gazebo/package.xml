@@ -14,7 +14,7 @@
   <depend>xarm_description</depend>
   <depend>xarm_controller</depend>
 
-  <!-- control_toolbox and gazebo_ros build/run the classic-Gazebo-only
+  <!-- control_toolbox, gazebo, and gazebo_ros build/run the classic-Gazebo-only
        gazebo_mimic_joint_plugin (see CMakeLists.txt); not required for gz-sim/Harmonic
        launches (gz_type=gz), so left undeclared here to keep this package - and
        xarm_moveit_config, which depends on it - installable on a Harmonic-only system.
@@ -23,6 +23,8 @@
        gazebo_ros2_control below, which that path also needs. -->
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>uf_ros_lib</exec_depend>
 
